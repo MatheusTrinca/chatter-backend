@@ -33,12 +33,14 @@ This is a **NestJS** backend application with the following key architectural co
 - **Framework**: NestJS (Node.js framework)
 - **Language**: TypeScript
 - **Database**: MongoDB with Mongoose ODM
+- **GraphQL**: Apollo Server with code-first approach
 - **Configuration**: Environment-based with Joi validation
 
 ### Project Structure
 - `src/main.ts` - Application entry point, bootstraps the NestJS app on port 3000 (or PORT env var)
-- `src/app.module.ts` - Root application module with global configuration
-- `src/common/database/` - Database connection and configuration module
+- `src/app.module.ts` - Root application module with global configuration and GraphQL setup
+- `src/common/database/` - Database connection and shared database patterns
+- `src/users/` - Users module with GraphQL resolver, service, and DTOs
 - `test/` - E2E tests and Jest configuration
 
 ### Configuration Management
@@ -52,6 +54,8 @@ This is a **NestJS** backend application with the following key architectural co
 - MongoDB integration through `@nestjs/mongoose`
 - Async configuration using ConfigService
 - Database module in `src/common/database/database.module.ts`
+- Abstract repository pattern with base `AbstractRepository` class
+- Abstract document schema with `AbstractDocument` providing `_id` field
 
 ### Code Quality Setup
 - **ESLint**: TypeScript-ESLint with Prettier integration
@@ -59,8 +63,16 @@ This is a **NestJS** backend application with the following key architectural co
 - **Jest**: Unit and e2e testing framework
 - **Prettier**: Code formatting
 
+### GraphQL Architecture
+- Apollo Server with auto-generated schema from TypeScript decorators
+- Code-first approach using `@nestjs/graphql`
+- GraphiQL playground enabled for development
+- GraphQL entities defined with `@ObjectType()` decorators
+- Resolvers use `@Resolver()`, `@Query()`, and `@Mutation()` decorators
+
 ## Key Dependencies
 - Core: `@nestjs/core`, `@nestjs/common`, `@nestjs/platform-express`
+- GraphQL: `@nestjs/graphql`, `@nestjs/apollo`, `@apollo/server`, `graphql`
 - Database: `@nestjs/mongoose`, `mongoose`
 - Configuration: `@nestjs/config`, `joi`
 - Testing: `jest`, `supertest`, `@nestjs/testing`
