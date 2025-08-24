@@ -18,6 +18,8 @@ import { AuthModule } from './auth/auth.module';
         MONGODB_URI: Joi.string().required(),
         PORT: Joi.number().required(),
         DB_NAME: Joi.string().required(),
+        JWT_SECRET: Joi.string().required(),
+        JWT_EXPIRATION: Joi.string().required(),
       }),
     }),
     DatabaseModule,
