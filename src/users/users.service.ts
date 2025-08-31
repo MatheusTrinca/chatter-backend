@@ -1,5 +1,9 @@
 import * as bcrypt from 'bcrypt';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { UserRepository } from './user.repository';
@@ -13,10 +17,17 @@ export class UsersService {
   }
 
   async create(createUserInput: CreateUserInput) {
-    return this.userRepository.create({
-      ...createUserInput,
-      password: await this.hashPassword(createUserInput.password),
-    });
+    try {
+      return await this.userRepository.create({
+        ...createUserInput,
+        password: await this.hashPassword(createUserInput.password),
+      });
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new BadRequestException('User already exists');
+      }
+      throw error;
+    }
   }
 
   async findAll() {
