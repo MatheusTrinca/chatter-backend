@@ -1,13 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateMessageInput } from './dto/create-message.input';
 import { Message } from './entities/message.entity';
 import { ChatsRepository } from '../chats.repository';
 import { Types } from 'mongoose';
 import { GetMessagesArgs } from './dto/get-messages.args';
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from 'src/common/constants/injection-tokens';
+import { MESSAGE_CREATED } from './constants/pubsub-triggers';
 
 @Injectable()
 export class MessagesService {
-  constructor(private readonly chatRepository: ChatsRepository) {}
+  constructor(
+    private readonly chatRepository: ChatsRepository,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {}
 
   async createMessage(
     { chatId, content }: CreateMessageInput,
@@ -18,6 +24,7 @@ export class MessagesService {
       createdAt: new Date(),
       userId,
       _id: new Types.ObjectId(),
+      chatId,
     };
 
     await this.chatRepository.findOneAndUpdate(
@@ -31,7 +38,8 @@ export class MessagesService {
         },
       },
     );
-
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    this.pubSub.publish(MESSAGE_CREATED, { messageCreated: message });
     return message;
   }
 
