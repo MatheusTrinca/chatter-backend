@@ -7,6 +7,7 @@ import {
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { UserRepository } from './user.repository';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +17,7 @@ export class UsersService {
     return bcrypt.hash(password, 10);
   }
 
-  async create(createUserInput: CreateUserInput) {
+  async create(createUserInput: CreateUserInput): Promise<User> {
     try {
       return await this.userRepository.create({
         ...createUserInput,
@@ -30,15 +31,15 @@ export class UsersService {
     }
   }
 
-  async findAll() {
+  async findAll(): Promise<User[]> {
     return this.userRepository.find({});
   }
 
-  findOne(_id: string) {
+  findOne(_id: string): Promise<User> {
     return this.userRepository.findOne({ _id });
   }
 
-  async update(_id: string, updateUserInput: UpdateUserInput) {
+  async update(_id: string, updateUserInput: UpdateUserInput): Promise<User> {
     if (updateUserInput.password) {
       updateUserInput.password = await this.hashPassword(
         updateUserInput.password,
@@ -55,11 +56,11 @@ export class UsersService {
     );
   }
 
-  remove(_id: string) {
+  remove(_id: string): Promise<User> {
     return this.userRepository.findOneAndDelete({ _id });
   }
 
-  async verifyUser(email: string, password: string) {
+  async verifyUser(email: string, password: string): Promise<User> {
     const user = await this.userRepository.findOne({ email });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
