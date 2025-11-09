@@ -7,7 +7,6 @@ import { PubSub } from 'graphql-subscriptions';
   providers: [
     {
       provide: PUB_SUB,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
       useValue: new PubSub(),
     },
   ],
