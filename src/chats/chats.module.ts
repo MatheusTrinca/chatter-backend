@@ -3,7 +3,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ChatsService } from './chats.service';
 import { ChatsResolver } from './chats.resolver';
 import { ChatsRepository } from './chats.repository';
-import { Chat, ChatSchema } from './entities/chat.entity';
+import { Chat } from './entities/chat.entity';
+import { ChatSchema } from './entities/chat.document';
 import { MessagesModule } from './messages/messages.module';
 
 @Module({
@@ -12,6 +13,6 @@ import { MessagesModule } from './messages/messages.module';
     forwardRef(() => MessagesModule),
   ],
   providers: [ChatsResolver, ChatsService, ChatsRepository],
-  exports: [ChatsRepository, ChatsService],
+  exports: [ChatsRepository],
 })
 export class ChatsModule {}
