@@ -5,6 +5,9 @@ import { Message } from '../messages/entities/message.entity';
 @ObjectType()
 export class Chat extends AbstractEntity {
   @Field()
+  userId: string;
+
+  @Field()
   name: string;
 
   @Field(() => Message, { nullable: true })

@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Subscription } from '@nestjs/graphql';
 import { ChatsService } from './chats.service';
 import { Chat } from './entities/chat.entity';
 import { CreateChatInput } from './dto/create-chat.input';
@@ -32,13 +32,24 @@ export class ChatsResolver {
     return this.chatsService.findOne(_id);
   }
 
-  // @Mutation(() => Chat)
-  // updateChat(@Args('updateChatInput') updateChatInput: UpdateChatInput) {
-  //   return this.chatsService.update(updateChatInput.id, updateChatInput);
-  // }
-
-  // @Mutation(() => Chat)
-  // removeChat(@Args('id', { type: () => Int }) id: number) {
-  //   return this.chatsService.remove(id);
-  // }
+  @Subscription(() => Chat, {
+    filter: (payload, _variables, context) => {
+      const userId = context.req.user._id;
+      const chat: Chat = payload.chatCreated;
+      return chat.userId !== userId;
+    },
+  })
+  chatCreated(): AsyncIterator<Chat> {
+    return this.chatsService.chatCreated();
+  }
 }
+
+// @Mutation(() => Chat)
+// updateChat(@Args('updateChatInput') updateChatInput: UpdateChatInput) {
+//   return this.chatsService.update(updateChatInput.id, updateChatInput);
+// }
+
+// @Mutation(() => Chat)
+// removeChat(@Args('id', { type: () => Int }) id: number) {
+//   return this.chatsService.remove(id);
+// }

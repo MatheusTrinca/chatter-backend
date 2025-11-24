@@ -40,9 +40,9 @@ export class MessagesResolver {
       );
     },
   })
-  async messageCreated(
+  messageCreated(
     @Args() _messageCreatedArgs: MessageCreatedArgs,
-  ): Promise<AsyncIterator<Message>> {
+  ): AsyncIterator<Message> {
     return this.messagesService.messageCreated();
   }
 }
