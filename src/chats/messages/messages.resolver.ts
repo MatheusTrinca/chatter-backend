@@ -31,18 +31,18 @@ export class MessagesResolver {
   }
 
   @Subscription(() => Message, {
-    filter: (payload, variables, context) => {
+    filter: (payload, variables: MessageCreatedArgs, context) => {
       const userId = context.req.user._id;
       const message: Message = payload.messageCreated;
       return (
-        message.chatId === variables.chatId &&
+        variables.chatIds.includes(message.chatId) &&
         message.user._id.toHexString() !== userId
       );
     },
   })
   async messageCreated(
-    @Args() messageCreatedArgs: MessageCreatedArgs,
+    @Args() _messageCreatedArgs: MessageCreatedArgs,
   ): Promise<AsyncIterator<Message>> {
-    return this.messagesService.messageCreated(messageCreatedArgs);
+    return this.messagesService.messageCreated();
   }
 }
