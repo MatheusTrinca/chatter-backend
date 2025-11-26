@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Subscription } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { ChatsService } from './chats.service';
 import { Chat } from './entities/chat.entity';
 import { CreateChatInput } from './dto/create-chat.input';
@@ -7,6 +7,7 @@ import { CurrentUser } from 'src/auth/current-user.decorator';
 import { TokenPayload } from 'src/auth/token-payload.interface';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/auth/guards/gql-auth.guard';
+import { PaginationArgs } from 'src/common/dto/pagination-args';
 
 @Resolver(() => Chat)
 export class ChatsResolver {
@@ -23,8 +24,8 @@ export class ChatsResolver {
 
   @Query(() => [Chat], { name: 'chats' })
   @UseGuards(GqlAuthGuard)
-  async findAll(): Promise<Chat[]> {
-    return this.chatsService.findMany();
+  async findAll(@Args() paginationArgs: PaginationArgs): Promise<Chat[]> {
+    return this.chatsService.findMany([], paginationArgs);
   }
 
   @Query(() => Chat, { name: 'chat' })
@@ -32,16 +33,16 @@ export class ChatsResolver {
     return this.chatsService.findOne(_id);
   }
 
-  @Subscription(() => Chat, {
-    filter: (payload, _variables, context) => {
-      const userId = context.req.user._id;
-      const chat: Chat = payload.chatCreated;
-      return chat.userId !== userId;
-    },
-  })
-  chatCreated(): AsyncIterator<Chat> {
-    return this.chatsService.chatCreated();
-  }
+  // @Subscription(() => Chat, {
+  //   filter: (payload, _variables, context) => {
+  //     const userId = context.req.user._id;
+  //     const chat: Chat = payload.chatCreated;
+  //     return chat.userId !== userId;
+  //   },
+  // })
+  // chatCreated(): AsyncIterator<Chat> {
+  //   return this.chatsService.chatCreated();
+  // }
 }
 
 // @Mutation(() => Chat)

@@ -7,6 +7,7 @@ import { PipelineStage, Types } from 'mongoose';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/common/constants/injection-tokens';
 import { CHAT_CREATED } from './messages/constants/pubsub-triggers';
+import { PaginationArgs } from 'src/common/dto/pagination-args';
 
 @Injectable()
 export class ChatsService {
@@ -25,15 +26,33 @@ export class ChatsService {
       messages: [],
     });
 
-    await this.pubSub.publish(CHAT_CREATED, { chatCreated: chat });
+    // await this.pubSub.publish(CHAT_CREATED, { chatCreated: chat });
 
     return chat;
   }
 
-  async findMany(prePipelineStages: PipelineStage[] = []): Promise<Chat[]> {
+  async findMany(
+    prePipelineStages: PipelineStage[] = [],
+    paginationArgs?: PaginationArgs,
+  ): Promise<Chat[]> {
     const chats = await this.chatsRepository.model.aggregate([
       ...prePipelineStages,
-      { $set: { latestMessage: { $arrayElemAt: ['$messages', -1] } } },
+      {
+        $set: {
+          latestMessage: {
+            $cond: [
+              '$messages',
+              { $arrayElemAt: ['$messages', -1] },
+              {
+                createdAt: new Date(),
+              },
+            ],
+          },
+        },
+      },
+      { $sort: { 'latestMessage.createdAt': -1 } },
+      { $skip: paginationArgs.skip || 0 },
+      { $limit: paginationArgs.limit || 1 },
       { $unset: 'messages' },
       {
         $lookup: {
@@ -56,7 +75,7 @@ export class ChatsService {
     return chats;
   }
 
-  async findOne(_id: string): Promise<Chat> {
+  async findOne(_id: string) {
     const chats = await this.findMany([
       { $match: { chatId: new Types.ObjectId(_id) } },
     ]);
@@ -68,6 +87,10 @@ export class ChatsService {
 
   chatCreated(): AsyncIterator<Chat> {
     return this.pubSub.asyncIterableIterator(CHAT_CREATED);
+  }
+
+  countChats(): Promise<number> {
+    return this.chatsRepository.model.countDocuments();
   }
 
   // update(id: number, updateChatInput: UpdateChatInput) {
