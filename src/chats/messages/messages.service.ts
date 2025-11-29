@@ -51,11 +51,18 @@ export class MessagesService {
     return message;
   }
 
-  async getMessages({ chatId }: GetMessagesArgs): Promise<Message[]> {
+  async getMessages({
+    chatId,
+    skip,
+    limit,
+  }: GetMessagesArgs): Promise<Message[]> {
     return this.chatsRepository.model.aggregate([
       { $match: { _id: new Types.ObjectId(chatId) } },
       { $unwind: '$messages' },
       { $replaceRoot: { newRoot: '$messages' } },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip || 0 },
+      { $limit: limit || 1 },
       {
         $lookup: {
           from: 'users',
@@ -68,6 +75,14 @@ export class MessagesService {
       { $unset: 'userId' },
       { $set: { chatId } },
     ]);
+  }
+
+  countMessages(chatId: string): Promise<{ messages: number }> {
+    return this.chatsRepository.model.aggregate([
+      { $match: { _id: new Types.ObjectId(chatId) } },
+      { $unwind: '$messages' },
+      { $count: 'messages' },
+    ])[0];
   }
 
   messageCreated(): AsyncIterator<Message> {
